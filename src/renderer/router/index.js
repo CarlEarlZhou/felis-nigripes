@@ -11,6 +11,16 @@ export default new Router({
       component: require('@/components/LandingPage').default
     },
     {
+      path: '/AddFile',
+      name: 'add-file',
+      component: require('@/components/AddFile').default
+    },
+    {
+      path: '/EditTag',
+      name: 'edit-tag',
+      component: require('@/components/EditTag').default
+    },
+    {
       path: '*',
       redirect: '/'
     }

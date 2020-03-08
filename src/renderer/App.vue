@@ -1,22 +1,29 @@
 <template>
-  <div id="app">
+<div id="app">
     <router-view></router-view>
-  </div>
+</div>
 </template>
 
 <script>
-import {db, initDB} from './db'
+import db from './db'
+import {ipcRenderer} from 'electron'
 
 export default {
     name: 'felis-nigripes',
-    mounted() {
-        db.all('select * from test', function(err, res) {
-            console.log(res)
-        })
+    methods: {
+        openWindow() {
+            ipcRenderer.send('add')
+        }
+    },
+    async mounted() {
+        // let ans = await db.excute('select * from test')
+        // console.log(ans)
     }
 }
 </script>
 
 <style>
-  /* CSS */
+.body {
+    background-color: white;
+}
 </style>
