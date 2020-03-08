@@ -7,6 +7,8 @@
 ``` bash
 # install dependencies
 npm install
+# rebuild sqlite3
+npm rebuild
 
 # serve with hot reload at localhost:9080
 npm run dev
