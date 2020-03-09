@@ -1,27 +1,25 @@
 <template>
   <div>
     <div style="boder: 1px red solid;">
-      <el-collapse v-model="activeGroupNames">
-        <el-collapse-item
-          v-for="tag_group in all_tag_list"
-          :key="tag_group.group_name"
-          :title="tag_group.group_name"
-          :name="tag_group.group_id">
-          <el-button
-            v-for="tag in tag_group.tag_list"
-            :key="tag.id"
-            type="primary" round
-          >
-            {{tag.name}}
-          </el-button>
-        </el-collapse-item>
+
+      <mu-expansion-panel 
+        v-for="tag_group in all_tag_list"
+        :key="tag_group.group_name"
+      >
         
-      </el-collapse>
+        <div slot="header">{{tag_group.group_name}}</div>
+        <mu-button
+          v-for="tag in tag_group.tag_list"
+          :key="tag.id"
+          color="success" round
+          @click="selectTag(tag.id)"
+        >
+          {{tag.name}}
+          <mu-icon v-if="selected_tag.includes(tag.id)" right value="check_circle"></mu-icon>
+        </mu-button>
+      </mu-expansion-panel>
     </div>
-    <div>
-      <el-button type="primary" @click="editTag">编辑标签</el-button>
-      
-    </div>
+    
   </div>
 </template>
 
@@ -30,20 +28,50 @@ import db from '@/db'
 import {ipcRenderer} from 'electron'
 
 export default {
+  props: [
+    'multiple',
+    'value'
+  ],
   name: 'FileTag',
   data() {
     return {
-      activeGroupNames: [],
+      component_type: (this.multiple === true) ? true : false,
       all_tag_list: [{
         group_name: "ungrouped",
         group_id: 1,
         tag_list: []
-      }]
+      }],
+    }
+  },
+  computed: {
+    selected_tag() {
+      return this.value
     }
   },
   methods: {
-    editTag() {
-      ipcRenderer.send('edit-tag')
+    selectTag(tag_id) {
+      if (this.component_type) {
+        let tag_index = this.selected_tag.indexOf(tag_id)
+        if (tag_index > -1) {
+          this.selected_tag.splice(tag_index, 1)
+        }
+        else {
+          this.selected_tag.push(tag_id)
+        }
+      }
+      else {
+        if (this.selected_tag.length === 0) {
+          this.selected_tag.push(tag_id)
+        }
+        else if (this.selected_tag[0] === tag_id) {
+          this.selected_tag.splice(0, 1)
+        }
+        else {
+          this.selected_tag.splice(0, 1)
+          this.selected_tag.push(tag_id)
+        }
+      }
+      this.$emit('input', this.selected_tag)
     }
   },
   async beforeMount() {

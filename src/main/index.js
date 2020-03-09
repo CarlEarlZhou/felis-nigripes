@@ -19,7 +19,9 @@ function createWindow () {
    * Initial window options
    */
   nativeTheme.themeSource = 'light'
-  BrowserWindow.addDevToolsExtension('node_modules/vue-devtools/vender')
+  // if (process.env.NODE_ENV === 'development') {
+  //   BrowserWindow.addDevToolsExtension('node_modules/vue-devtools/vender')
+  // }
 
   mainWindow = new BrowserWindow({
     height: 563,

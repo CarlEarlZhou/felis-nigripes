@@ -2,12 +2,16 @@
 <div>
     <el-row>
         <el-col>
-            <el-button type="primary" plain @click="openWindow">添加</el-button>
+            <mu-button color="primary" @click="openWindow">添加</mu-button>
         </el-col>
     </el-row>
     <el-row>
         <el-col :span="5">
-          <file-tag></file-tag>
+          <file-tag :multiple="true" v-model="selected_tag"></file-tag>
+          <div>
+            <mu-button color="primary" @click="editTag">编辑标签</mu-button>
+            
+          </div>
         </el-col>
         <el-col :span="19">result</el-col>
     </el-row>
@@ -27,13 +31,16 @@ export default {
     },
     data() {
       return {
-        // tableData: []
+        selected_tag: []
       }
     },
     methods: {
-        openWindow() {
-            ipcRenderer.send('add-file')
-        }
+      editTag() {
+        ipcRenderer.send('edit-tag')
+      },
+      openWindow() {
+        ipcRenderer.send('add-file')
+      }
     },
     async mounted() {
     }

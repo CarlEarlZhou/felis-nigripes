@@ -54,6 +54,21 @@ class sqliteDB {
         let res = await this.excute(sql)
         return res
     }
+
+    async getTagByID(tag_id) {
+        let sql = `select * from tag where id = ${tag_id};`
+        let res = await this.excute(sql)
+        return res[0]
+    }
+
+    async updateTagByID(tag) {
+        let sql = `update tag 
+                    set name = '${tag.name}',
+                    tag_group_id = ${tag.tag_group_id} 
+                    where id = ${tag.id}`
+        let res = await this.excute(sql)
+        return
+    }
 }
 
 export default new sqliteDB()
