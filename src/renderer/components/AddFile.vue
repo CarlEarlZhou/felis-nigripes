@@ -135,6 +135,9 @@ export default {
       })
       return res
     },
+    /**
+     * 将用户新添加的文件分为已存在和不存在两组
+     */
     separateFile(file_paths) {
       let promise_pool = []
       for (let file_path of file_paths) {

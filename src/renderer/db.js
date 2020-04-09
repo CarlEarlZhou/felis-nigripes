@@ -24,7 +24,7 @@ class sqliteDB {
     }
 
     async storeFiles(file_paths) {
-        let sql = `insert or replace into test (c) values `
+        let sql = `insert or replace into file (path) values `
         file_paths = file_paths.join(`'),('`)
         file_paths = `('` + file_paths + `');`
         sql += file_paths
@@ -38,7 +38,7 @@ class sqliteDB {
      * @return {boolean}
      */
     async isFileExist(file_path) {
-        let sql = `select * from test where c='${file_path}';`
+        let sql = `select * from file where path='${file_path}';`
         let res = await this.excute(sql)
         console.log(res)
         if (res.length !== 0) {
@@ -47,6 +47,12 @@ class sqliteDB {
         else {
             return false
         }
+    }
+
+    async getFile(start=0, end=1000) {
+        let sql = `select * from file where id >= ${start} and id < ${end};`
+        let res = await this.excute(sql)
+        return res
     }
 
     async getTagGroup() {
@@ -70,6 +76,13 @@ class sqliteDB {
 
     async getTagsByGroupID(group_id) {
         let sql = `select * from tag where tag_group_id = ${group_id};`
+        let res = await this.excute(sql)
+        return res
+    }
+
+    async getTagsByFileID(file_id) {
+        let sql = `select tag.id, tag.name, tag.tag_group_id from tag, file_tag 
+                    where file_tag.file_id = ${file_id} and file_tag.tag_id = tag.id;`
         let res = await this.excute(sql)
         return res
     }

@@ -65,6 +65,7 @@ export default {
     async loadData() {
       this.all_tag_list = []
       let group_list = await db.getTagGroup()
+      // not recommended
       group_list.forEach(async (tag_group) => {
         let tag_list = await db.getTagsByGroupID(tag_group.id)
         this.all_tag_list.push({
