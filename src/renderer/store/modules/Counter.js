@@ -1,7 +1,9 @@
 import path from 'path'
+import db from '@/db'
 
 class FileNode {
-  constructor(name, tag_list, type='folder', father_node=null) {
+  constructor(name, tag_list, type='folder', father_node=null, id=0) {
+    this.id = id
     this.name = name
     this.father_node = father_node
     if (this.father_node != null) {
@@ -14,7 +16,7 @@ class FileNode {
       this.full_path = ''
     }
     this.type = type
-    this.tags = new Set()
+    this.tags = new Map()
     this.updateTag(tag_list)
     this.childNodes = new Map()
   }
@@ -23,16 +25,41 @@ class FileNode {
     let cur = this
     while (cur != null) {
       for (let tag of tag_list) {
-        cur.tags.add(tag)
+        if (cur.tags.has(tag)) {
+          cur.tags.set(tag, cur.tags.get(tag)+1)
+        }
+        else {
+          cur.tags.set(tag, 1)
+        }
       }
       cur = cur.father_node
     }
   }
 
-  addChildNode(name, tag_list, type='folder') {
+  addChildNode(name, tag_list, type='folder', id=0) {
     if (!this.childNodes.has(name)) {
-      this.childNodes.set(name, new FileNode(name, tag_list, type, this))
+      this.childNodes.set(name, new FileNode(name, tag_list, type, this, id))
     }
+  }
+
+  removeTag(tag) {
+    db.removeFileTag(this.id, tag.id)
+    let cur = this
+    while (cur != null) {
+      let num = cur.tags.get(tag)
+      if (num <= 1) {
+        cur.tags.delete(tag)
+      } 
+      else {
+        cur.tags.set(tag, num-1)
+      }
+      cur = cur.father_node
+    }
+  }
+
+  addTag(tag) {
+    db.addFileTag(this.id, tag.id)
+    this.updateTag([tag])
   }
 }
 
@@ -74,10 +101,14 @@ const mutations = {
       cur_node.addChildNode(element, [])
       cur_node = cur_node.childNodes.get(element)
     }
-    cur_node.addChildNode(path_list[path_list.length-1], file.tags, 'file')
+    cur_node.addChildNode(path_list[path_list.length-1], file.tags, 'file', file.id)
     console.log(state.file_node)
   },
   getFileByPath(state, file_path) {
+    if (file_path.length == 0) {
+      state.cur_node = state.file_node
+      return
+    }
     let path_list = file_path.split(path.sep)
     state.cur_node = findNodeByPath(state.file_node, path_list)
   },

@@ -75,9 +75,6 @@ export default {
       this.getFile()
     },
     submit() {
-      if (this.file_url.length <= 0) {
-        return
-      }
       this.cutList()
       this.pushList(this.file_url)
       this.getFile()

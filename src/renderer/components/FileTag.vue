@@ -12,10 +12,10 @@
           v-for="tag in tag_group.tag_list"
           :key="tag.id"
           color="success" round
-          @click="selectTag(tag.id)"
+          @click="selectTag(tag)"
         >
           {{tag.name}}
-          <mu-icon v-if="selected_tag.includes(tag.id)" right value="check_circle"></mu-icon>
+          <mu-icon v-if="selected_tag.includes(tag)" right value="check_circle"></mu-icon>
         </mu-button>
         <div v-if="editable && tag_group.group_name !== 'ungrouped'">
           <mu-divider></mu-divider>
@@ -86,26 +86,28 @@ export default {
       this.on_delete_group = undefined
       this.open_dialog = false
     },
-    selectTag(tag_id) {
+    selectTag(tag) {
       if (this.component_type) {
-        let tag_index = this.selected_tag.indexOf(tag_id)
+        let tag_index = this.selected_tag.indexOf(tag)
         if (tag_index > -1) {
           this.selected_tag.splice(tag_index, 1)
         }
         else {
-          this.selected_tag.push(tag_id)
+          this.selected_tag.push(tag)
         }
+        console.log(tag_index, this.selected_tag)
+
       }
       else {
         if (this.selected_tag.length === 0) {
-          this.selected_tag.push(tag_id)
+          this.selected_tag.push(tag)
         }
-        else if (this.selected_tag[0] === tag_id) {
+        else if (this.selected_tag[0] === tag) {
           this.selected_tag.splice(0, 1)
         }
         else {
           this.selected_tag.splice(0, 1)
-          this.selected_tag.push(tag_id)
+          this.selected_tag.push(tag)
         }
       }
       this.$emit('input', this.selected_tag)

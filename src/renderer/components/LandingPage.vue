@@ -1,13 +1,24 @@
 <template>
 <div>
     <el-row>
-        <el-col>
-            <mu-button color="primary" @click="openWindow">添加</mu-button>
-        </el-col>
+      <el-col :span="6">
+        <div class="menu-text">
+          系统
+        </div>
+        <mu-button color="primary" @click="openWindow">添加</mu-button>
+      </el-col>
+      <el-col :span="12">
+        <div class="menu-text">
+          文件
+        </div>
+        <mu-button color="primary">
+          详细信息
+        </mu-button>
+      </el-col>
     </el-row>
     <el-row>
       <el-col :span="19">
-        <address-bar></address-bar>
+        <address-bar ref="address_bar"></address-bar>
       </el-col>
       <el-col :span="5">search bar</el-col>
     </el-row>
@@ -21,7 +32,7 @@
           </div>
         </el-col>
         <el-col :span="19">
-          <result></result>
+          <result :selected_tag="selected_tag"></result>
         </el-col>
     </el-row>
 </div>
@@ -41,7 +52,8 @@ export default {
     components: {
       FileTag,
       AddressBar,
-      Result
+      Result,
+      
     },
     data() {
       return {
@@ -56,7 +68,7 @@ export default {
         ipcRenderer.send('add-file')
       }
     },
-    async mounted() {
+    async created() {
       console.log(this.$store)
       this.$store.dispatch('init')
       let file_list = await db.getFile()
@@ -71,10 +83,17 @@ export default {
           // console.log(this.$store.state.Counter.file_node.childNodes)
         }
       })
-    }
+    },
+    // mounted() {
+    //   console.log(this.$refs.address_bar)
+    //   this.$refs.address_bar.submit()
+    // }
 }
 </script>
 
 <style>
-  /* CSS */
+.menu-text {
+  width: 100%;
+  text-align: center;
+}
 </style>

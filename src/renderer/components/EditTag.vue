@@ -76,7 +76,7 @@ export default {
   watch: {
     selected_tag: async function(arr) {
       if (arr.length !==0) {
-        let tag_id = arr[0]
+        let tag_id = arr[0].id
         this.current_tag = await db.getTagByID(tag_id)
       }
       else {
@@ -165,7 +165,7 @@ export default {
       this.selected_tag.splice(0, 1)
     },
     async deleteTag() {
-      await db.deleteTagByID(this.selected_tag[0])
+      await db.deleteTagByID(this.selected_tag[0].id)
       this.selected_tag.splice(0, 1)
       this.updateFileTagComponent()
     }

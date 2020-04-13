@@ -87,6 +87,17 @@ class sqliteDB {
         return res
     }
 
+    async removeFileTag(file_id, tag_id) {
+        let sql = `delete from file_tag where file_id = ${file_id} and tag_id = ${tag_id};`
+        let res = await this.excute(sql)
+    }
+
+    async addFileTag(file_id, tag_id) {
+        let sql = `insert into file_tag (file_id, tag_id) 
+                    values (${file_id}, ${tag_id});`
+        let res = await this.excute(sql)
+    }
+
     /**
      * 根据标签名确认标签是否存在
      * @param {string} tag_name 
