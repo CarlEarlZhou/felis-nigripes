@@ -7,7 +7,7 @@
       :key="f.full_path"
       @click.native="showDetail(f)"
     >
-      <div v-if="hasTags(f.tags)">
+      <div v-if="hasTags(f.tags) && (!f.search_result)">
         <el-row
           style="display: flex; align-items: center; min-height: 40px;"
         >
@@ -25,8 +25,6 @@
               {{tag.name}}
             </mu-chip>
           </el-col>
-          
-          
         </el-row>
         <mu-divider></mu-divider>
       </div>
@@ -37,9 +35,12 @@
     <div v-if="cur_file" style="padding-left: 3em;">
       <h2>{{cur_file.name}}</h2>
       <mu-divider></mu-divider>
-      <span>detail</span>
+      <div>
+        
+      </div>
       <mu-divider></mu-divider>
       <div v-if="!edit_cur_file_tag">
+        <span>标签：</span>
         <mu-chip
           v-for="tag in cur_file.tags.keys()"
           :key="tag.id"
@@ -65,6 +66,19 @@
         <mu-button color="primary" @click="confirmRemoveTag">确定</mu-button>
         <mu-button color="primary" @click="cancleRemoveTag">取消</mu-button>
       </div>
+      <mu-divider></mu-divider>
+      <el-row>
+        <el-col :span="5">大小：</el-col>
+        <el-col :span="19">{{cur_file_info.size}}kb</el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="5">创建时间：</el-col>
+        <el-col :span="19">{{cur_file_info.birthtime}}</el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="5">修改时间：</el-col>
+        <el-col :span="19">{{cur_file_info.ctime}}</el-col>
+      </el-row>
     </div>
   </mu-drawer>
 </div>
@@ -73,6 +87,8 @@
 <script>
 import db from '@/db'
 import FileTag from '@/components/FileTag'
+import fs from 'fs'
+import _ from 'lodash'
 
 export default {
   name: '',
@@ -80,7 +96,8 @@ export default {
     FileTag
   },
   props: [
-    'selected_tag'
+    'selected_tag',
+    'search_content'
   ],
   data() {
     return {
@@ -89,6 +106,7 @@ export default {
       result: [],
       open_detail: false,
       cur_file: null,
+      cur_file_info: {},
       edit_cur_file_tag: false,
       cur_file_tags: [],
     }
@@ -116,11 +134,15 @@ export default {
         this.result = result_list
         console.log(this.result)
       }
+    },
+    search_content() {
+      this.matchSearch()
     }
   },
   methods: {
     showDetail(f) {
       this.cur_file = f
+      this.getFileInfo(f)
       this.open_detail = true
     },
     hasTags(tag_map) {
@@ -160,7 +182,38 @@ export default {
         }
       }
       this.edit_cur_file_tag = false
-    }
+    },
+    getFileInfo(f) {
+      fs.stat(f.full_path, (err, res) => {
+        console.log(res)
+        this.cur_file_info = res
+        this.cur_file_info.size /= 1000
+        this.cur_file_info.ctime = (new Date(this.cur_file_info.ctimeMs)).toLocaleString()
+        this.cur_file_info.birthtime = (new Date(this.cur_file_info.birthtimeMs)).toLocaleString()
+        console.log(this.cur_file_info)
+      })
+    },
+    matchSearch: _.debounce(function() {
+      let search_list = this.search_content.split('')
+      for (let f of this.result) {
+        let index = 0
+        let flag = true
+        for (let char of search_list) {
+          index = f.name.indexOf(char, index)
+          if (index < 0) {
+            flag = false
+            f.search_result = true
+            break
+          }
+        }
+        if (flag) {
+          f.search_result = false
+        }
+      }
+      // 更新视图
+      this.result.push(0)
+      this.result.pop()
+    }, 1000)
   },
   created() {
     // console.log(this.$store)

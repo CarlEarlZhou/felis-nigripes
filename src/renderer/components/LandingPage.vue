@@ -5,7 +5,8 @@
         <div class="menu-text">
           系统
         </div>
-        <mu-button color="primary" @click="openWindow">添加</mu-button>
+        <mu-button color="primary" @click="openWindow">添加文件</mu-button>
+        <mu-button color="primary" @click="editRule">编辑规则</mu-button>
       </el-col>
       <el-col :span="12">
         <div class="menu-text">
@@ -20,7 +21,10 @@
       <el-col :span="19">
         <address-bar ref="address_bar"></address-bar>
       </el-col>
-      <el-col :span="5">search bar</el-col>
+      <el-col :span="5">
+        <el-input v-model="search_content"></el-input>
+        
+      </el-col>
     </el-row>
     
     <el-row>
@@ -32,7 +36,7 @@
           </div>
         </el-col>
         <el-col :span="19">
-          <result :selected_tag="selected_tag"></result>
+          <result :selected_tag="selected_tag" :search_content="search_content"></result>
         </el-col>
     </el-row>
 </div>
@@ -58,11 +62,16 @@ export default {
     data() {
       return {
         selected_tag: [],
+        search_content: ''
       }
     },
     methods: {
       editTag() {
         ipcRenderer.send('edit-tag')
+      },
+      editRule() {
+        console.log(233)
+        ipcRenderer.send('edit-rule')
       },
       openWindow() {
         ipcRenderer.send('add-file')

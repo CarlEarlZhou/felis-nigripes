@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
 import path from 'path'
+import fs from 'fs'
 
 import '../renderer/store'
 
@@ -81,4 +82,18 @@ ipcMain.on('edit-tag', function() {
   })
   editTagWindow.loadURL(winURL + '#/EditTag')
   editTagWindow.on('closed', () => {editTagWindow = null})
+})
+
+let editRuleWindow
+ipcMain.on('edit-rule', function() {
+  editRuleWindow = new BrowserWindow({
+    width: 1000, 
+    height: 563,
+    parent: mainWindow,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
+  editRuleWindow.loadURL(winURL + '#/EditRule'); //new.html是新开窗口的渲染进程
+  editRuleWindow.on('closed',()=>{editRuleWindow = null})
 })

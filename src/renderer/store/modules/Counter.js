@@ -1,5 +1,5 @@
 import path from 'path'
-import db from '@/db'
+import db from '../../db'
 
 class FileNode {
   constructor(name, tag_list, type='folder', father_node=null, id=0) {

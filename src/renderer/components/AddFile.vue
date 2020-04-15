@@ -46,8 +46,45 @@
         </el-col>
       </el-row>
       <el-row v-if="current_step==1">
-        <el-col :span="9">规则列表</el-col>
-        <el-col :span="15">规则详情</el-col>
+        <el-col :span="8">
+          <mu-paper>
+            <div>
+              <span>规则列表：</span>
+            </div>
+            <mu-list>
+              <mu-list-item
+                button :ripple="false"
+                v-for="(rule_set, index) of rule_set_list"
+                :key="index"
+                @click.native="current_rule = index"
+              >
+                <mu-list-item-title>{{rule_set.rule_set_name}}</mu-list-item-title>
+                <mu-button icon @click="selectRule(index)">
+                  <mu-icon v-if="!selected_rules.includes(index)" value="radio_button_unchecked">
+                  </mu-icon>
+                  <mu-icon v-if="selected_rules.includes(index)" value="check_circle">
+                  </mu-icon>
+                </mu-button>
+              </mu-list-item>
+            </mu-list>
+          </mu-paper>
+        </el-col>
+        <el-col :span="16">
+          <div v-for="(rule, index) in rule_set_list[current_rule].rule_list"
+            :key="index"
+          >
+            <h2>
+              {{rule.tag}}
+            </h2>
+            <div v-for="(rule_part, index) in rule.rule"
+              :key="index"
+            >
+              <span v-if="rule_part.type=='end'">扩展名为</span>
+              <span v-else>文件名中包含</span>
+              <span>{{rule_part.value}}</span>
+            </div>
+          </div>
+        </el-col>
       </el-row>
       <el-button style="margin-top: 12px;" @click="prevStep">上一步</el-button>
       <el-button style="margin-top: 12px;" @click="nextStep">下一步</el-button>
@@ -58,6 +95,7 @@
 
 <script>
 import db from '@/db'
+import fs from 'fs'
 
 export default {
   name: 'AddFile',
@@ -68,9 +106,21 @@ export default {
       new_file_paths: [],
       selected_files: [],
       optional_files: [],
+      rule_set_list: [],
+      selected_rules: [],
+      current_rule: 0
     }
   },
   methods: {
+    selectRule(rule_index) {
+      let i = this.selected_rules.indexOf(rule_index)
+      if (i == -1) {
+        this.selected_rules.push(rule_index)
+      } 
+      else {
+        this.selected_rules.splice(i, 1)
+      }
+    },
     // clearPathList() {
     //   this.exist_file_paths = []
     //   this.new_file_paths = []
@@ -154,8 +204,11 @@ export default {
       return promise_pool
     }
   },
-  beforeMount() {
-      
+  created() {
+    fs.readFile('rules.json', (err, res) => {
+      this.rule_set_list = JSON.parse(res).rule_set
+      console.log(this.rule_set_list)
+    })
   }
 }
 </script>

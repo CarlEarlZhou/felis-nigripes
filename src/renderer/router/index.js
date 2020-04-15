@@ -16,6 +16,11 @@ export default new Router({
       component: require('@/components/AddFile').default
     },
     {
+      path: '/EditRule',
+      name: 'edit-rule',
+      component: require('@/components/EditRule').default
+    },
+    {
       path: '/EditTag',
       name: 'edit-tag',
       component: require('@/components/EditTag').default

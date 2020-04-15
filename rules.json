@@ -1,10 +1,1 @@
-{
-    "rule_set": [
-        {
-            "rule_set_name": "defaule",
-            "rule_list": [
-                
-            ]
-        }
-    ]
-}
+{"rule_set":[{"rule_set_name":"defaule","rule_list":[{"tag":"test","rule":[{"type":"end","value":".json"},{"type":"contains","value":"rule"}]},{"tag":"test2","rule":[{"type":"contains","value":"pack"},{"type":"contains","value":"kage"}]}]}]}
