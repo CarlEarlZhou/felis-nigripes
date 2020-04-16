@@ -15,7 +15,7 @@
           @click="selectTag(tag)"
         >
           {{tag.name}}
-          <mu-icon v-if="selected_tag.includes(tag)" right value="check_circle"></mu-icon>
+          <mu-icon v-if="includes(selected_tag, tag)" right value="check_circle"></mu-icon>
         </mu-button>
         <div v-if="editable && tag_group.group_name !== 'ungrouped'">
           <mu-divider></mu-divider>
@@ -62,6 +62,13 @@ export default {
     }
   },
   methods: {
+    includes(list, element) {
+      for (let e of list) {
+        if (e.id == element.id)
+          return true
+      }
+      return false
+    },
     async loadData() {
       this.all_tag_list = []
       let group_list = await db.getTagGroup()

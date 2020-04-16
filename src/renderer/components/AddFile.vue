@@ -9,7 +9,7 @@
       <el-steps :active="current_step" finish-status="success" align-center>
         <el-step title="选择将要添加的文件"></el-step>
         <el-step title="应用标签规则"></el-step>
-        <el-step title="步骤 3"></el-step>
+        <el-step title="调整文件标签"></el-step>
       </el-steps>
       <el-row v-if="current_step==0">
         <el-col :span="8">
@@ -86,6 +86,42 @@
           </div>
         </el-col>
       </el-row>
+      <el-row v-if="current_step==2">
+        <el-col :span="18">
+          <mu-paper>
+            <mu-list>
+              <mu-list-item
+                button :ripple="false"
+                v-for="(file, index) of selected_files"
+                :key="index"
+                @click.native="current_file = selected_files[index]"
+              >
+                <mu-list-item-title>
+                  <span v-if="isEqual(file, current_file)" style="color: #2196f3">
+                    {{file.name}}
+                  </span>
+                  <span v-else>
+                    {{file.name}}
+                  </span>
+                </mu-list-item-title>
+                <div>
+                  <mu-chip
+                    v-for="tag in file.tags"
+                    :key="tag.id"
+                    color="green"
+                  >
+                    {{tag.name}}
+                  </mu-chip>
+                </div>
+              </mu-list-item>
+            </mu-list>
+          </mu-paper>
+        </el-col>
+        <el-col :span="6">
+          <file-tag v-model="current_file.tags"></file-tag>
+        </el-col>
+      </el-row>
+      
       <el-button style="margin-top: 12px;" @click="prevStep">上一步</el-button>
       <el-button style="margin-top: 12px;" @click="nextStep">下一步</el-button>
       
@@ -96,9 +132,15 @@
 <script>
 import db from '@/db'
 import fs from 'fs'
+import FileTag from '@/components/FileTag'
+import testFile from '@/rule'
+import _ from 'lodash'
 
 export default {
   name: 'AddFile',
+  components: {
+    FileTag
+  },
   data() {
     return {
       current_step: 0,
@@ -108,10 +150,14 @@ export default {
       optional_files: [],
       rule_set_list: [],
       selected_rules: [],
+      current_file: null,
       current_rule: 0
     }
   },
   methods: {
+    isEqual(a, b) {
+      return _.isEqual(a, b)
+    },
     selectRule(rule_index) {
       let i = this.selected_rules.indexOf(rule_index)
       if (i == -1) {
@@ -129,7 +175,11 @@ export default {
     // },
     nextStep() {
       if (this.current_step >= 2) {
+        this.saveFile()
         return
+      }
+      else if (this.current_step == 1) {
+        this.generateFileTag()
       }
       this.current_step += 1
     },
@@ -144,6 +194,55 @@ export default {
         return 'success-row'
       }
       return ''
+    },
+    saveFile() {
+      this.selected_files.forEach(file => {
+        db.isFileExist(file.path).then(async (res) => {
+          if (!res) {
+            await db.storeFiles([file.path])
+          }
+          let db_file = await db.getFileByPath(file.path)
+          db_file = db_file[0]
+          console.log(db_file)
+          for (let tag of file.tags) {
+            db.addFileTag(db_file.id, tag.id)
+          }
+        })
+      })
+    },
+    async generateFileTag() {
+      for (let rule_index of this.selected_rules) {
+        let rule_set = this.rule_set_list[rule_index]
+        console.log(rule_set)
+        for (let rule of rule_set.rule_list) {
+          for (let i = 0; i < this.selected_files.length; i++) {
+            console.log(rule)
+            if (testFile(this.selected_files[i], rule)) {
+              if (!this.selected_files[i].tags.includes(rule.tag)) {
+                this.selected_files[i].tags.push(rule.tag)
+              }
+            }
+          }
+        }
+      }
+      for (let file of this.selected_files) {
+        for (let i = 0; i < file.tags.length; i++) {
+          let db_tag = await db.getTagByName(file.tags[i])
+          db_tag = db_tag[0]
+          if (!db_tag) {
+            try {
+              await db.addTag(file.tags[i], 1)
+            } catch (error) {
+            }
+            db_tag = await db.getTagByName(file.tags[i])
+            db_tag = db_tag[0]
+          }
+          file.tags.splice(i, 1, db_tag)
+        }
+      }
+      this.current_file = this.selected_files[0]
+      console.log(this.selected_files)
+      console.log(this.current_file)
     },
     selectFile() {
       // this.optional_files = [1, 2, 3]
@@ -161,7 +260,6 @@ export default {
         this.formatFile(this.exist_file_paths, true).forEach((obj) => {
           // console.log(obj)
           this.optional_files.push(obj)
-          console.log(this.optional_files)
         })
         this.formatFile(this.new_file_paths, false).forEach((obj) => {
           this.selected_files.push(obj)
@@ -180,7 +278,8 @@ export default {
         res.push({
           name: file_name,
           path: file_path,
-          exist: exist_flag
+          exist: exist_flag,
+          tags: []
         })
       })
       return res

@@ -32,14 +32,19 @@ class sqliteDB {
         return this.excute(sql)
     }
 
+    async getFileByPath(file_path) {
+        let sql = `select * from file where path='${file_path}';`
+        let res = await this.excute(sql)
+        return res
+    }
+
     /**
      * 根据文件路径确定文件是否存在
      * @param {string} file_path 
      * @return {boolean}
      */
     async isFileExist(file_path) {
-        let sql = `select * from file where path='${file_path}';`
-        let res = await this.excute(sql)
+        let res = await this.getFileByPath(file_path)
         console.log(res)
         if (res.length !== 0) {
             return true
@@ -72,6 +77,13 @@ class sqliteDB {
     async deleteTagGroupByID(tag_group_id) {
         let sql = `delete from tag_group where id = ${tag_group_id};`
         await this.excute(sql)
+    }
+
+    async getTagByName(tag_name) {
+        let sql = `select * from tag where name='${tag_name}';`
+        console.log(sql)
+        let res = await this.excute(sql)
+        return res
     }
 
     async getTagsByGroupID(group_id) {

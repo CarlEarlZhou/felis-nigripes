@@ -52,6 +52,7 @@ export default {
       else {
         return
       }
+      this.file_url = this.url_list[this.index]
       this.getFile()
     },
     forward() {
@@ -61,6 +62,7 @@ export default {
       else {
         return
       }
+      this.file_url = this.url_list[this.index]
       this.getFile()
     },
     upward() {
