@@ -1,5 +1,7 @@
 <template>
 <div class="main">
+  <mu-checkbox v-model="search_type" label="显示文件夹结构">
+  </mu-checkbox>
   <mu-button icon @click="backward">
     <mu-icon value="arrow_back"></mu-icon>
   </mu-button>
@@ -22,14 +24,26 @@ export default {
     return {
       file_url: '',
       url_list: [],
-      index: -1
+      index: -1,
+      search_type: false
     }
   },
   watch: {
     '$store.state.Counter.child_folder': function() {
+      
       this.cutList()
-      this.pushList(this.url_list[index]+path.sep+this.$store.state.Counter.child_folder)
+      
+      if (this.url_list[this.index].length == 0) {
+        this.file_url = this.$store.state.Counter.child_folder
+      }
+      else {
+        this.file_url = this.url_list[this.index]+path.sep+this.$store.state.Counter.child_folder
+      }
+      this.pushList(this.file_url)
       this.getFile()
+    },
+    search_type() {
+      this.$emit('change-type', this.search_type)
     }
   },
   methods: {
@@ -39,7 +53,7 @@ export default {
       this.$store.dispatch('getFileByPath', this.url_list[this.index])
     },
     cutList() {
-      this.url_list.splice(this.index, this.url_list.length-this.index-1)
+      this.url_list.splice(this.index+1, this.url_list.length-this.index-1)
     },
     pushList(url) {
       this.url_list.push(url)
@@ -68,10 +82,12 @@ export default {
     upward() {
       let tem_list = this.file_url.split(path.sep)
       if (tem_list.length <= 1) {
-        return
+        this.file_url = ''
       }
-      tem_list = tem_list.slice(0, tem_list.length - 1)
-      this.file_url = tem_list.join(path.sep)
+      else {
+        tem_list = tem_list.slice(0, tem_list.length - 1)
+        this.file_url = tem_list.join(path.sep)
+      }
       this.cutList()
       this.pushList(this.file_url)
       this.getFile()
@@ -81,6 +97,12 @@ export default {
       this.pushList(this.file_url)
       this.getFile()
     }
+  },
+  mounted() {
+    setTimeout(() => {
+      this.pushList(this.file_url)
+      this.getFile()
+    }, 1000)
   }
 }
 </script>

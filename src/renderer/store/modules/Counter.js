@@ -25,10 +25,15 @@ class FileNode {
     let cur = this
     while (cur != null) {
       for (let tag of tag_list) {
-        if (cur.tags.has(tag)) {
-          cur.tags.set(tag, cur.tags.get(tag)+1)
+        let flag = false
+        for (let map_tag of cur.tags.keys()) {
+          if (tag.id == map_tag.id) {
+            cur.tags.set(map_tag, cur.tags.get(map_tag)+1)
+            flag = true
+            break
+          }
         }
-        else {
+        if (!flag) {
           cur.tags.set(tag, 1)
         }
       }
@@ -82,7 +87,9 @@ const state = {
   main: 0,
   file_node: null,
   cur_node: null,
-  child_folder: '' // 用户点击文件夹时改变这个值
+  child_folder: '', // 用户点击文件夹时改变这个值,
+  refresh_result: 0,
+  refresh_tag: 0
 }
 
 const getters = {
@@ -114,6 +121,12 @@ const mutations = {
   },
   enterFolder(state, folder_name) {
     state.child_folder = folder_name
+  },
+  refreshResult(state) {
+    state.refresh_result += 1
+  },
+  refreshTag(state) {
+    state.refresh_tag += 1
   }
 }
 
@@ -130,6 +143,12 @@ const actions = {
   },
   enterFolder({commit}, folder_name) {
     commit('enterFolder', folder_name)
+  },
+  refreshResult({commit}) {
+    commit('refreshResult')
+  },
+  refreshTag({commit}) {
+    commit('refreshTag')
   }
 }
 

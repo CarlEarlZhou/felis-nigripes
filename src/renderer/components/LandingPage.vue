@@ -1,5 +1,5 @@
 <template>
-<div>
+<div style="height: 100%; display: flex; flex-direction: column;">
     <el-row>
       <el-col :span="6">
         <div class="menu-text">
@@ -7,6 +7,8 @@
         </div>
         <mu-button color="primary" @click="openWindow">添加文件</mu-button>
         <mu-button color="primary" @click="editRule">编辑规则</mu-button>
+        <mu-button color="primary" @click="editTag">编辑标签</mu-button>
+
       </el-col>
       <el-col :span="12">
         <div class="menu-text">
@@ -17,26 +19,33 @@
         </mu-button>
       </el-col>
     </el-row>
-    <el-row>
+    <br>
+    <el-row  style="display: flex; align-items: center;">
       <el-col :span="19">
-        <address-bar ref="address_bar"></address-bar>
+        <address-bar ref="address_bar" @change-type="search_type=$event"></address-bar>
       </el-col>
-      <el-col :span="5">
-        <el-input v-model="search_content"></el-input>
+      <el-col :span="5" style="display: flex;">
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <el-input v-model="search_content" placeholder="在此处搜索"></el-input>
         
       </el-col>
     </el-row>
-    
-    <el-row>
-        <el-col :span="5">
-          <file-tag :multiple="true" v-model="selected_tag"></file-tag>
-          <div>
-            <mu-button color="primary" @click="editTag">编辑标签</mu-button>
-            
+    <br>
+    <el-row style="flex: 1; ">
+        <el-col :span="5" 
+          style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; border: 5px #90a4ae double;">
+          <mu-appbar z-depth="0" style="width: 100%; text-align: center; height: 3.5rem;" color="blueGrey300">
+            <span style="font-size: 1.1rem; width: 100%;">标签类别</span>
+          </mu-appbar>
+          <div style="flex: 1; overflow-y: scroll">
+            <file-tag :multiple="true" v-model="selected_tag"></file-tag>
           </div>
         </el-col>
-        <el-col :span="19">
-          <result :selected_tag="selected_tag" :search_content="search_content"></result>
+        <el-col :span="19" style="height: 100%; overflow-y: scroll; border-top: 5px #90a4ae double;">
+          <result :selected_tag="selected_tag" 
+            :search_content="search_content"
+            :folder_type="search_type"
+          ></result>
         </el-col>
     </el-row>
 </div>
@@ -57,10 +66,10 @@ export default {
       FileTag,
       AddressBar,
       Result,
-      
     },
     data() {
       return {
+        search_type: false,
         selected_tag: [],
         search_content: ''
       }

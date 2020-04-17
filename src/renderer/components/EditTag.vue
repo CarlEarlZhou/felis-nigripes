@@ -107,7 +107,7 @@ export default {
   },
   methods: {
     updateFileTagComponent() {
-      this.timer = new Date().getTime()
+      this.$store.dispatch('refreshTag')
     },
     openAlertDialog (index) {
       this.current_dialog_info = index

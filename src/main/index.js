@@ -70,6 +70,10 @@ ipcMain.on('add-file', function() {
   addFileWindow.on('closed',()=>{addFileWindow = null})
 })
 
+ipcMain.on('close-add-file', function() {
+  addFileWindow.close()
+})
+
 let editTagWindow
 ipcMain.on('edit-tag', function() {
   editTagWindow = new BrowserWindow({

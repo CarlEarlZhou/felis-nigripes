@@ -56,6 +56,11 @@ export default {
       on_delete_group: undefined
     }
   },
+  watch: {
+    '$store.state.Counter.refresh_tag': function() {
+      this.loadData()
+    }
+  },
   computed: {
     selected_tag() {
       return this.value

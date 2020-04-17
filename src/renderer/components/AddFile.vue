@@ -118,7 +118,7 @@
           </mu-paper>
         </el-col>
         <el-col :span="6">
-          <file-tag v-model="current_file.tags"></file-tag>
+          <file-tag v-model="current_file.tags" :multiple="true"></file-tag>
         </el-col>
       </el-row>
       
@@ -135,6 +135,7 @@ import fs from 'fs'
 import FileTag from '@/components/FileTag'
 import testFile from '@/rule'
 import _ from 'lodash'
+import {ipcRenderer} from 'electron'
 
 export default {
   name: 'AddFile',
@@ -176,10 +177,20 @@ export default {
     nextStep() {
       if (this.current_step >= 2) {
         this.saveFile()
+        this.$store.dispatch('refreshResult')
+        ipcRenderer.send('close-add-file')
         return
       }
       else if (this.current_step == 1) {
         this.generateFileTag()
+      }
+      else if (this.current_step == 0) {
+        if (this.selected_files.length == 0) {
+          this.$alert('请选择要添加的文件', '待添加列表为空', {
+            confirmButtonText: '确定',
+          })
+          return
+        }
       }
       this.current_step += 1
     },
@@ -208,6 +219,7 @@ export default {
             db.addFileTag(db_file.id, tag.id)
           }
         })
+        this.$store.dispatch('addFile', file)
       })
     },
     async generateFileTag() {
@@ -244,6 +256,17 @@ export default {
       console.log(this.selected_files)
       console.log(this.current_file)
     },
+    // 判断文件是否在本次添加的列表中
+    testFileExist(file_list, f) {
+      let flag = false
+      for (let file of file_list) {
+        if (file.path == f.path) {
+          flag = true
+          break
+        }
+      }
+      return flag
+    },
     selectFile() {
       // this.optional_files = [1, 2, 3]
       this.exist_file_paths = []
@@ -259,10 +282,12 @@ export default {
         // console.log(this.new_file_paths)
         this.formatFile(this.exist_file_paths, true).forEach((obj) => {
           // console.log(obj)
-          this.optional_files.push(obj)
+          if (!this.testFileExist(this.optional_files, obj))
+            this.optional_files.push(obj)
         })
         this.formatFile(this.new_file_paths, false).forEach((obj) => {
-          this.selected_files.push(obj)
+          if (!this.testFileExist(this.selected_files, obj))
+            this.selected_files.push(obj)
         })
         // if (this.new_file_paths.length !== 0) {
         //   db.storeFiles(this.new_file_paths)

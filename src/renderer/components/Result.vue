@@ -1,11 +1,11 @@
 <template>
-<div>
+<mu-paper style="height: 100%; padding: 1em;">
   
   <el-row>
     <el-col :span="content_width"
       v-for="f in result"
       :key="f.full_path"
-      @click.native="showDetail(f)"
+      @click.native="clickFunc(f)"
     >
       <div v-if="hasTags(f.tags) && (!f.search_result)">
         <el-row
@@ -36,7 +36,7 @@
       <h2>{{cur_file.name}}</h2>
       <mu-divider></mu-divider>
       <div>
-        
+
       </div>
       <mu-divider></mu-divider>
       <div v-if="!edit_cur_file_tag">
@@ -81,7 +81,7 @@
       </el-row>
     </div>
   </mu-drawer>
-</div>
+</mu-paper>
 </template>
 
 <script>
@@ -97,24 +97,44 @@ export default {
   },
   props: [
     'selected_tag',
-    'search_content'
+    'search_content',
+    'folder_type',
   ],
   data() {
     return {
       content_width: 24,
-      folder_type: false,
       result: [],
       open_detail: false,
       cur_file: null,
       cur_file_info: {},
       edit_cur_file_tag: false,
       cur_file_tags: [],
+      click_timer: 0
     }
   },
   watch: {
     '$store.state.Counter.cur_node': function() {
+      this.loadData()
+    },
+    folder_type() {
+      this.loadData()
+    },
+    search_content() {
+      this.matchSearch()
+    },
+    '$store.state.Counter.refresh_result': function() {
+      this.loadData()
+    }
+  },
+  methods: {
+    loadData() {
       if (this.folder_type) {
-        
+        let result_list = []
+        for (let t of this.$store.state.Counter.cur_node.childNodes.values()) {
+          result_list.push(t)
+        }
+        this.result = result_list
+        console.log(this.result)
       }
       else {
         let tem
@@ -135,11 +155,23 @@ export default {
         console.log(this.result)
       }
     },
-    search_content() {
-      this.matchSearch()
-    }
-  },
-  methods: {
+    clickFunc(f) {
+      this.click_timer += 1
+      setTimeout(() => {
+        if (this.click_timer == 1) {
+          this.showDetail(f)
+          this.click_timer = 0
+        }
+      }, 300)
+      if (this.click_timer >=2) {
+        this.enterFolder(f)
+        this.click_timer = 0
+      }
+    },
+    enterFolder(f) {
+      console.log(233333333333)
+      this.$store.dispatch('enterFolder', f.name)
+    },
     showDetail(f) {
       this.cur_file = f
       this.getFileInfo(f)
