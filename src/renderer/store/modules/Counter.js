@@ -89,10 +89,18 @@ const state = {
   cur_node: null,
   child_folder: '', // 用户点击文件夹时改变这个值,
   refresh_result: 0,
-  refresh_tag: 0
+  refresh_tag: 0,
+  url: ''
 }
 
 const getters = {
+  token(state) {
+    let index = state.url.indexOf('access_token=')
+    let end_index = state.url.indexOf('&', index)
+    let token = state.url.substr(index, end_index-index)
+    token = token.replace('access_token=', '')
+    return decodeURIComponent(token)
+  }
 }
 
 const mutations = {
@@ -103,7 +111,9 @@ const mutations = {
     console.log(file)
     let path_list = file.path.split(path.sep)
     let cur_node = state.file_node
+    console.log('root: ', cur_node)
     for (let index = 0; index < path_list.length-1; index++) {
+      console.log(cur_node)
       const element = path_list[index]
       cur_node.addChildNode(element, [])
       cur_node = cur_node.childNodes.get(element)
@@ -127,6 +137,10 @@ const mutations = {
   },
   refreshTag(state) {
     state.refresh_tag += 1
+  },
+  urlChange(state, url) {
+    console.log('change....')
+    state.url = url
   }
 }
 
@@ -149,7 +163,10 @@ const actions = {
   },
   refreshTag({commit}) {
     commit('refreshTag')
-  }
+  },
+  urlChange({commit}, url) {
+    commit('urlChange', url)
+  } 
 }
 
 export default {

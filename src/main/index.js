@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
 import path from 'path'
 import fs from 'fs'
 
-import '../renderer/store'
+import store from '../renderer/store'
 
 /**
  * Set `__static` path to static files in production
@@ -31,7 +31,8 @@ function createWindow () {
     useContentSize: true,
     width: 1000,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      webSecurity: false
     }
   })
 
@@ -41,6 +42,8 @@ function createWindow () {
     mainWindow = null
   })
 }
+
+app.commandLine.appendSwitch("--disable-http-cache")
 
 app.on('ready', createWindow)
 
@@ -100,4 +103,55 @@ ipcMain.on('edit-rule', function() {
   })
   editRuleWindow.loadURL(winURL + '#/EditRule'); //new.html是新开窗口的渲染进程
   editRuleWindow.on('closed',()=>{editRuleWindow = null})
+})
+
+function findToken(url) {
+  if (url.indexOf('access_token=') != -1) {
+    return true
+  }
+  else {
+    return false
+  }
+}
+
+let loginWindow
+ipcMain.on('login', function() {
+  loginWindow = new BrowserWindow({
+    width: 1000, 
+    height: 563,
+    parent: mainWindow,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
+  loginWindow.loadURL('https://login.live.com/oauth20_authorize.srf?client_id=e690e338-e44d-4c11-ac03-0b2a96fa5fe7&scope=onedrive.readwrite%20offline_access&resource=https%3A%2F%2Fgraph.microsoft.com%2F&response_type=token&redirect_uri=https://login.live.com/oauth20_desktop.srf'); //new.html是新开窗口的渲染进程
+  // loginWindow.loadURL('https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=https://login.live.com/oauth20_desktop.srf')
+  loginWindow.webContents.on('will-navigate', function (event, newUrl) {
+    console.log(newUrl);
+    // More complex code to handle tokens goes here
+  })
+  loginWindow.webContents.on('did-stop-loading', function() {
+    console.log(loginWindow.webContents.getURL())
+    store.dispatch('urlChange', loginWindow.webContents.getURL())
+    if (findToken(loginWindow.webContents.getURL())) {
+      loginWindow.close()
+    }
+  })
+  loginWindow.on('closed',()=>{loginWindow = null})
+})
+
+ipcMain.on('logout', function() {
+  loginWindow = new BrowserWindow({
+    width: 1000, 
+    height: 563,
+    parent: mainWindow,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
+  loginWindow.loadURL('https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=https://login.live.com/oauth20_desktop.srf')
+  loginWindow.webContents.on('did-stop-loading', function() {
+    console.log(loginWindow.webContents.getURL())
+  })
+  loginWindow.on('closed',()=>{loginWindow = null})
 })

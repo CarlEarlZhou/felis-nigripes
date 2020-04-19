@@ -178,7 +178,7 @@ export default {
       if (this.current_step >= 2) {
         this.saveFile()
         this.$store.dispatch('refreshResult')
-        ipcRenderer.send('close-add-file')
+        // ipcRenderer.send('close-add-file')
         return
       }
       else if (this.current_step == 1) {

@@ -18,6 +18,22 @@
           详细信息
         </mu-button>
       </el-col>
+      <el-col :span="6">
+        <div class="menu-text">
+          OneDrive
+        </div>
+        <mu-button color="primary" @click="login">
+          登录
+        </mu-button>
+        <mu-button color="primary" @click="logout">
+          注销
+        </mu-button>
+        <mu-button color="primary" @click="testapi">
+          test
+        </mu-button>
+        <span>{{test}}</span>
+      </el-col>
+      
     </el-row>
     <br>
     <el-row  style="display: flex; align-items: center;">
@@ -58,6 +74,7 @@ import FileTag from '@/components/FileTag'
 import AddressBar from '@/components/AddressBar'
 import Result from '@/components/Result'
 import path from 'path'
+import axios from 'axios'
 
 
 export default {
@@ -71,10 +88,31 @@ export default {
       return {
         search_type: false,
         selected_tag: [],
-        search_content: ''
+        search_content: '',
+        test: ''
       }
     },
     methods: {
+      testapi() {
+        axios.get(`https://graph.microsoft.com/v1.0/users/AAAAAAAAAAAAAAAAAAAAAD6aI_eNU5zA_aeaybtin6o/me/drive/root`,
+        {
+          headers: {
+            Authorization: 'bearer ' + this.$store.getters.token
+          }
+        }).then(res => {
+          console.log(res)
+        }).catch(err => {
+          console.log(err)
+        })
+        // console.log(this.$store.getters.token)
+        // this.test=this.$store.getters.token
+      },
+      login() {
+        ipcRenderer.send('login')
+      },
+      logout() {
+        ipcRenderer.send('logout')
+      },
       editTag() {
         ipcRenderer.send('edit-tag')
       },

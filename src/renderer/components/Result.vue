@@ -36,11 +36,14 @@
       <h2>{{cur_file.name}}</h2>
       <mu-divider></mu-divider>
       <div>
-
+        <h3>缩略：</h3><br>
+        <img style="width: 80%" v-if="getFileType(cur_file)=='img'" :src="cur_file.full_path" alt="">
+        <div style="height: 40rem; overflow: hidden;" v-if="getFileType(cur_file)=='docx'" v-html="file_content"></div>
+        <canvas id="the-canvas"></canvas>
       </div>
       <mu-divider></mu-divider>
       <div v-if="!edit_cur_file_tag">
-        <span>标签：</span>
+        <h3><span>标签：</span></h3>
         <mu-chip
           v-for="tag in cur_file.tags.keys()"
           :key="tag.id"
@@ -48,7 +51,7 @@
         >
           {{tag.name}}
         </mu-chip>
-        <br>
+        <br><br>
         <mu-button color="primary" @click="changeTag">修改标签</mu-button>
       </div>
       <div v-if="edit_cur_file_tag">
@@ -89,6 +92,8 @@ import db from '@/db'
 import FileTag from '@/components/FileTag'
 import fs from 'fs'
 import _ from 'lodash'
+import mammoth from 'mammoth'
+import PDFJS from 'pdfjs-dist'
 
 export default {
   name: '',
@@ -109,7 +114,8 @@ export default {
       cur_file_info: {},
       edit_cur_file_tag: false,
       cur_file_tags: [],
-      click_timer: 0
+      click_timer: 0,
+      file_content: ''
     }
   },
   watch: {
@@ -124,9 +130,70 @@ export default {
     },
     '$store.state.Counter.refresh_result': function() {
       this.loadData()
+    },
+    cur_file() {
+      this.file_content = ''
+      this.getFileContent(this.cur_file)
     }
   },
   methods: {
+    getFileContent(f) {
+      if (this.getFileType(f) == 'docx') {
+        mammoth.convertToHtml({path: f.full_path}).then(res => {
+          this.file_content = res.value
+        })
+      }
+      else {
+        var loadingTask = PDFJS.getDocument(f.full_path);
+        loadingTask.promise.then(function(pdf) {
+          console.log('PDF loaded');
+          
+          var pageNumber = 1;
+          pdf.getPage(pageNumber).then(function(page) {
+            console.log('Page loaded');
+            
+            var scale = 0.8;
+            var viewport = page.getViewport(scale);
+
+            var canvas = document.getElementById('the-canvas');
+            var context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            var renderContext = {
+              canvasContext: context,
+              viewport: viewport
+            };
+            var renderTask = page.render(renderContext);
+            renderTask.then(function () {
+              console.log('Page rendered');
+            });
+          });
+        }, function (reason) {
+          console.error(reason);
+        });
+      }
+        
+      
+    },
+    getFileType(f) {
+      let name = f.name
+      let index = name.indexOf('.')
+      let ans = index
+      while (index != -1) {
+        ans = index
+        index = name.indexOf('.', index+1)
+      }
+      ans += 1
+      let type = name.substr(ans, name.length-ans)
+      if (type == 'jpg' || type == 'png') {
+        return 'img'
+      }
+      else if (type == 'docx') {
+        return 'docx'
+      }
+      console.log(type)
+    },
     loadData() {
       if (this.folder_type) {
         let result_list = []
